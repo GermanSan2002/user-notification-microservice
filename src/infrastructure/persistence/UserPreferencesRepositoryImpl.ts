@@ -28,7 +28,7 @@ export class UserPreferencesRepositoryImpl implements UserPreferencesRepository 
     this.preferencesList[index] = preferences;
   }  
 
-  async clean(): Promise<void>{
-    this.preferencesList = [];
+  async delete(userId: string): Promise<void> {
+    this.preferencesList = this.preferencesList.filter((preferences) => preferences.userId !== userId);
   }
 }

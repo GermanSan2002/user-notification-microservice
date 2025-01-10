@@ -15,4 +15,8 @@ export class AlertTypeRepositoryImpl implements AlertTypeRepository {
   async findAll(): Promise<AlertType[]> {
     return this.alertTypes;
   }
+
+  async delete(id: string): Promise<void> {
+    this.alertTypes = this.alertTypes.filter((alerts) => alerts.id !== id);
+  }  
 }

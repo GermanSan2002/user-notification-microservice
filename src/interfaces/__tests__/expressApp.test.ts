@@ -10,6 +10,7 @@ import express from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { Frequency } from "../../domain/enums/Frequency";
 import { Channel } from "../../domain/enums/Channel";
+import { AlertTypeRepositoryImpl } from "../../infrastructure/persistence/AlertTypeRepositoryImpl";
 
 const app: Application = express();
 app.use(express.json());
@@ -17,10 +18,11 @@ app.use(express.json());
 // Mock de repositorios
 const notificationRepository = new NotificationRepositoryImpl();
 const userPreferencesRepository = new UserPreferencesRepositoryImpl();
+const alertTypeRepository = new AlertTypeRepositoryImpl();
 
 // Instancias de servicios y controladores
 const notificationService = new NotificationService(notificationRepository);
-const userPreferencesService = new UserPreferencesService(userPreferencesRepository);
+const userPreferencesService = new UserPreferencesService(userPreferencesRepository, alertTypeRepository);
 
 const notificationController = new NotificationController(notificationService);
 const userPreferencesController = new UserPreferencesController(userPreferencesService);
@@ -95,7 +97,7 @@ describe("Pruebas de los endpoints de la API", () => {
 
     afterAll(() => {
       // Limpiar los datos de prueba
-      userPreferencesRepository.clean();
+      userPreferencesRepository.delete("12345");
     });
   });
 
@@ -108,8 +110,14 @@ describe("Pruebas de los endpoints de la API", () => {
       doNotDisturb: false,
     };
 
+    const mockAlertType = {
+      id: "1",
+      alert: "alert"
+    }
+
     beforeAll(() => {
       // Agregar datos de prueba
+      alertTypeRepository.save(mockAlertType);
       userPreferencesRepository.save(mockPreferences);
     });
 
@@ -129,8 +137,8 @@ describe("Pruebas de los endpoints de la API", () => {
     });
 
     afterAll(() => {
-      // Limpiar los datos de prueba
-      userPreferencesRepository.clean();
+      userPreferencesRepository.delete("12345");
+      alertTypeRepository.delete("1");
     });
   });
 });

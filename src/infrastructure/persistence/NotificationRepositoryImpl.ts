@@ -20,4 +20,8 @@ export class NotificationRepositoryImpl implements NotificationRepository {
   async findByUser(userId: string): Promise<Notification[]> {
     return this.notifications.filter((notification) => notification.userId === userId);
   }
+
+  async delete(id: string): Promise<void> {
+    this.notifications = this.notifications.filter((notes) => notes.id !== id);
+  }  
 }

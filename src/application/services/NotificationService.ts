@@ -36,4 +36,8 @@ export class NotificationService implements NotificationUseCase {
       timestamp: n.timestamp,
     }));
   }
+
+  async delete(id: string): Promise<void> {
+    return this.notificationRepository.delete(id);
+  }
 }

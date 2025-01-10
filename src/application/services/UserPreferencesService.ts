@@ -1,11 +1,11 @@
-//import { UserPreferencesRepository } from "../../domain/repositories/UserPreferencesRepository";
 import { PreferencesUseCase } from "../interfaces/PreferencesUseCase";
 import { NotificationPreferencesDTO } from "../dtos/NotificationPreferencesDTO";
 import { NotificationPreferences } from "../../domain/entities/NotificationPreferences";
 import { UserPreferencesRepositoryImpl } from "../../infrastructure/persistence/UserPreferencesRepositoryImpl";
+import { AlertTypeRepositoryImpl } from "../../infrastructure/persistence/AlertTypeRepositoryImpl";
 
 export class UserPreferencesService implements PreferencesUseCase {
-  constructor(private preferencesRepository: UserPreferencesRepositoryImpl) {}
+  constructor(private preferencesRepository: UserPreferencesRepositoryImpl, private alertTypeRepository: AlertTypeRepositoryImpl) {}
 
   async getUserPreferences(userId: string): Promise<NotificationPreferencesDTO> {
     const preferences = await this.preferencesRepository.findByUser(userId);
@@ -22,13 +22,26 @@ export class UserPreferencesService implements PreferencesUseCase {
   }
 
   async updateUserPreferences(userId: string, preferencesDTO: NotificationPreferencesDTO): Promise<void> {
+    const alertTypes = await Promise.all(
+      preferencesDTO.alertTypes.map(async (id) => {
+          const alert = await this.alertTypeRepository.findById(id);
+          if (!alert) {
+              throw new Error(`Alert with ID ${id} not found`);
+          }
+          return alert;
+      })
+    );
     const preferences = new NotificationPreferences(
       preferencesDTO.userId,
-      preferencesDTO.alertTypes.map((id) => ({ id, alert: "" })), // Assume alert description is fetched elsewhere
+      alertTypes,
       preferencesDTO.frequency,
       preferencesDTO.preferredChannels,
       preferencesDTO.doNotDisturb
     );
     await this.preferencesRepository.update(preferences);
+  }
+
+  async delete(userId: string): Promise<void>{
+    return this.preferencesRepository.delete(userId);
   }
 }
